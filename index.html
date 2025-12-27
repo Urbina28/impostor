@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Impostor - Gael Urbina Studios</title>
+    <style>
+        :root { --neon: #00fbff; --pink: #ff0055; --bg: #050505; }
+        body {
+            font-family: 'Arial Black', sans-serif;
+            background-color: var(--bg);
+            color: white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            text-align: center;
+        }
+        .gael-brand { color: var(--pink); letter-spacing: 3px; font-size: 12px; margin-bottom: 10px; }
+        h1 { font-size: 3rem; margin: 0; background: linear-gradient(to bottom, #fff, var(--neon)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .setup-card, .game-card {
+            background: #111;
+            border: 2px solid var(--neon);
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 0 20px rgba(0, 251, 255, 0.2);
+            width: 80%;
+            max-width: 400px;
+        }
+        input {
+            width: 100%;
+            padding: 15px;
+            margin: 20px 0;
+            background: #000;
+            border: 1px solid var(--pink);
+            color: white;
+            font-size: 1.2rem;
+            text-align: center;
+            box-sizing: border-box;
+        }
+        .btn {
+            background: var(--pink);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            width: 100%;
+            font-weight: bold;
+            cursor: pointer;
+            text-transform: uppercase;
+        }
+        .secret-box {
+            height: 150px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            color: var(--neon);
+            border: 1px dashed #444;
+            margin: 20px 0;
+            cursor: pointer;
+        }
+        .hidden { display: none; }
+        .imposter-text { color: #ff0000; text-shadow: 0 0 10px red; }
+    </style>
+</head>
+<body>
+
+    <div class="gael-brand">GAEL URBINA STUDIOS PRESENTA</div>
+    <h1>IMPOSTOR</h1>
+
+    <div class="setup-card" id="setup">
+        <p>¿Cúantos jugadores son?</p>
+        <input type="number" id="totalJugadores" value="4" min="3">
+        <button class="btn" onclick="iniciarReparto()">¡REPARTIR ROLES!</button>
+    </div>
+
+    <div class="game-card hidden" id="game">
+        <h2 id="turnoDe">Jugador 1</h2>
+        <div class="secret-box" id="box" onclick="mostrarPalabra()">
+            TOCA PARA VER
+        </div>
+        <button class="btn hidden" id="btnSiguiente" onclick="siguienteTurno()">LISTO, SIGUIENTE</button>
+    </div>
+
+    <script>
+        const palabras = ["🍕 Pizza", "🦖 Dinosaurio", "📱 TikTok", "🎬 Netflix", "🚀 Avión", "🍔 Burger King", "🎮 Minecraft", "⚽ Messi"];
+        let roles = [];
+        let indexActual = 0;
+
+        function iniciarReparto() {
+            const num = document.getElementById('totalJugadores').value;
+            const secreta = palabras[Math.floor(Math.random() * palabras.length)];
+            const impostorPos = Math.floor(Math.random() * num);
+
+            // Crear lista de roles
+            roles = Array.from({length: num}, (_, i) => 
+                i === impostorPos ? "¡ERES EL IMPOSTOR! 🕵️‍♂️" : secreta
+            );
+
+            document.getElementById('setup').classList.add('hidden');
+            document.getElementById('game').classList.remove('hidden');
+            actualizarInterfaz();
+        }
+
+        function actualizarInterfaz() {
+            document.getElementById('turnoDe').innerText = "Jugador " + (indexActual + 1);
+            document.getElementById('box').innerText = "TOCA PARA VER";
+            document.getElementById('box').classList.remove('imposter-text');
+            document.getElementById('btnSiguiente').classList.add('hidden');
+        }
+
+        function mostrarPalabra() {
+            const box = document.getElementById('box');
+            const texto = roles[indexActual];
+            box.innerText = texto;
+            
+            if(texto.includes("IMPOSTOR")) {
+                box.classList.add('imposter-text');
+            }
+            
+            document.getElementById('btnSiguiente').classList.remove('hidden');
+        }
+
+        function siguienteTurno() {
+            indexActual++;
+            if(indexActual < roles.length) {
+                actualizarInterfaz();
+            } else {
+                alert("¡TODOS TIENEN SU ROL!\n\nMade by Gael Urbina");
+                location.reload();
+            }
+        }
+    </script>
+</body>
+</html>
