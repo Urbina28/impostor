@@ -2,135 +2,203 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Impostor - Gael Urbina Studios</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <title>Mar Jump! 💖</title>
     <style>
-        :root { --neon: #00fbff; --pink: #ff0055; --bg: #050505; }
-        body {
-            font-family: 'Arial Black', sans-serif;
-            background-color: var(--bg);
-            color: white;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
-            margin: 0;
-            text-align: center;
+        * { -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
+        body { margin: 0; overflow: hidden; font-family: 'Arial', sans-serif; background-color: #ffeaf2; }
+        
+        /* Pantallas Superpuestas */
+        .overlay {
+            position: fixed; inset: 0; display: flex; align-items: center; 
+            justify-content: center; z-index: 100; text-align: center;
         }
-        .gael-brand { color: var(--pink); letter-spacing: 3px; font-size: 12px; margin-bottom: 10px; }
-        h1 { font-size: 3rem; margin: 0; background: linear-gradient(to bottom, #fff, var(--neon)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-        .setup-card, .game-card {
-            background: #111;
-            border: 2px solid var(--neon);
-            padding: 30px;
-            border-radius: 15px;
-            box-shadow: 0 0 20px rgba(0, 251, 255, 0.2);
-            width: 80%;
-            max-width: 400px;
+        #login-screen { background: #ffc1d6; }
+        #game-over-screen { background: rgba(255, 182, 193, 0.8); display: none; }
+
+        .box { 
+            background: white; padding: 30px; border-radius: 30px; 
+            width: 80%; max-width: 300px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); 
         }
-        input {
-            width: 100%;
-            padding: 15px;
-            margin: 20px 0;
-            background: #000;
-            border: 1px solid var(--pink);
-            color: white;
-            font-size: 1.2rem;
-            text-align: center;
-            box-sizing: border-box;
+        
+        input { padding: 15px; border-radius: 25px; border: 2px solid #ff85a1; width: 90%; font-size: 16px; margin-bottom: 15px; text-align: center; }
+        button { background: #ff85a1; color: white; border: none; padding: 15px 30px; border-radius: 25px; cursor: pointer; font-weight: bold; font-size: 18px; }
+        
+        /* Juego */
+        #game-container { display: none; width: 100vw; height: 100vh; position: relative; background: linear-gradient(#b2e2f2, #fff); overflow: hidden; }
+        #floor { position: absolute; bottom: 0; width: 100%; height: 60px; background: #ff85a1; border-top: 4px solid #ff4d6d; }
+        
+        #mar { 
+            width: 70px; height: 70px; position: absolute; bottom: 60px; left: 40px;
+            background-image: url('cara-novia.png.jpeg'); background-size: cover; background-position: center;
+            border-radius: 50%; border: 3px solid white; box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            z-index: 10;
         }
-        .btn {
-            background: var(--pink);
-            color: white;
-            border: none;
-            padding: 15px 30px;
-            width: 100%;
-            font-weight: bold;
-            cursor: pointer;
-            text-transform: uppercase;
-        }
-        .secret-box {
-            height: 150px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.8rem;
-            color: var(--neon);
-            border: 1px dashed #444;
-            margin: 20px 0;
-            cursor: pointer;
-        }
-        .hidden { display: none; }
-        .imposter-text { color: #ff0000; text-shadow: 0 0 10px red; }
+        .obstacle { position: absolute; bottom: 60px; width: 45px; height: 45px; display: flex; align-items: center; justify-content: center; font-size: 35px; }
+        
+        #message-area { position: absolute; top: 100px; width: 100%; text-align: center; font-size: 22px; color: #ff4d6d; font-weight: bold; padding: 0 20px; box-sizing: border-box; }
+        #ui { position: absolute; top: 40px; left: 0; width: 100%; text-align: center; color: #ff4d6d; font-size: 22px; font-weight: bold; }
     </style>
 </head>
 <body>
 
-    <div class="gael-brand">GAEL URBINA STUDIOS PRESENTA</div>
-    <h1>IMPOSTOR</h1>
-
-    <div class="setup-card" id="setup">
-        <p>¿Cúantos jugadores son?</p>
-        <input type="number" id="totalJugadores" value="4" min="3">
-        <button class="btn" onclick="iniciarReparto()">¡REPARTIR ROLES!</button>
+    <div id="login-screen" class="overlay">
+        <div class="box">
+            <h1 style="color: #ff4d6d; margin: 0 0 15px 0;">¡ola de mar! ❤️</h1>
+            <input type="text" id="nameInput" placeholder="DIGAME QUE ME AMA ✨">
+            <button onclick="startGame()">Entrar</button>
+        </div>
     </div>
 
-    <div class="game-card hidden" id="game">
-        <h2 id="turnoDe">Jugador 1</h2>
-        <div class="secret-box" id="box" onclick="mostrarPalabra()">
-            TOCA PARA VER
+    <div id="game-over-screen" class="overlay">
+        <div class="box">
+            <h2 style="color: #ff4d6d;">¡JA! BOT... ✨</h2>
+            <p id="final-score" style="color: #ff85a1; font-weight: bold;"></p>
+            <button onclick="resetGame()">Juegue otra vez 🌸</button>
         </div>
-        <button class="btn hidden" id="btnSiguiente" onclick="siguienteTurno()">LISTO, SIGUIENTE</button>
+    </div>
+
+    <div id="game-container">
+        <div id="ui">Puntos: <span id="score">0</span></div>
+        <div id="message-area">¡Toca para saltar! ✨</div>
+        <div id="mar"></div>
+        <div id="floor"></div>
     </div>
 
     <script>
-        const palabras = ["🍕 Pizza", "🦖 Dinosaurio", "📱 TikTok", "🎬 Netflix", "🚀 Avión", "🍔 Burger King", "🎮 Minecraft", "⚽ Messi"];
-        let roles = [];
-        let indexActual = 0;
+        const mar = document.getElementById("mar");
+        const scoreDisplay = document.getElementById("score");
+        const msgArea = document.getElementById("message-area");
+        const container = document.getElementById("game-container");
+        const loginScreen = document.getElementById("login-screen");
+        const gameOverScreen = document.getElementById("game-over-screen");
 
-        function iniciarReparto() {
-            const num = document.getElementById('totalJugadores').value;
-            const secreta = palabras[Math.floor(Math.random() * palabras.length)];
-            const impostorPos = Math.floor(Math.random() * num);
+        let gravity = 0.6;
+        let jumpStrength = -12;
+        let yVelocity = 0;
+        let isJumping = false;
+        let score = 0;
+        let gameActive = false;
+        let obstacles = [];
+        let gameSpeed = 5;
+        let animationId;
+        let obstacleTimeout;
 
-            // Crear lista de roles
-            roles = Array.from({length: num}, (_, i) => 
-                i === impostorPos ? "¡ERES EL IMPOSTOR! 🕵️‍♂️" : secreta
-            );
+        const mensajes = ["¡Te amooo!", "¡Eres mi princesa de ojos lindos!", "¡BESAMEEEE!", "¡Mi niña linda!", "¡Muack tamo! 💋", "¡Eres miaaaa de mi ok?!","!CASEMONOS YAA!","!SALTALEE TAMO!","YA TE QUIERO VEEER MI AMOR :(","TE VOY HACER MAMA","HOLA TE AMO"];
 
-            document.getElementById('setup').classList.add('hidden');
-            document.getElementById('game').classList.remove('hidden');
-            actualizarInterfaz();
-        }
-
-        function actualizarInterfaz() {
-            document.getElementById('turnoDe').innerText = "Jugador " + (indexActual + 1);
-            document.getElementById('box').innerText = "TOCA PARA VER";
-            document.getElementById('box').classList.remove('imposter-text');
-            document.getElementById('btnSiguiente').classList.add('hidden');
-        }
-
-        function mostrarPalabra() {
-            const box = document.getElementById('box');
-            const texto = roles[indexActual];
-            box.innerText = texto;
-            
-            if(texto.includes("IMPOSTOR")) {
-                box.classList.add('imposter-text');
-            }
-            
-            document.getElementById('btnSiguiente').classList.remove('hidden');
-        }
-
-        function siguienteTurno() {
-            indexActual++;
-            if(indexActual < roles.length) {
-                actualizarInterfaz();
+        function startGame() {
+            const name = document.getElementById("nameInput").value.toLowerCase();
+            if(name.includes("teamo")) {
+                loginScreen.style.display = "none";
+                container.style.display = "block";
+                resetGame();
             } else {
-                alert("¡TODOS TIENEN SU ROL!\n\nMade by Gael Urbina");
-                location.reload();
+                alert("Este juego es especial para  mi princesa Mar ❤️");
             }
+        }
+
+        function resetGame() {
+            // Detener cualquier proceso anterior
+            gameActive = true;
+            cancelAnimationFrame(animationId);
+            clearTimeout(obstacleTimeout);
+            
+            // Reiniciar variables
+            score = 0;
+            gameSpeed = 5;
+            scoreDisplay.innerText = "0";
+            msgArea.innerText = "¡Toca para saltar! ✨";
+            
+            // Limpiar visualmente
+            gameOverScreen.style.display = "none";
+            obstacles.forEach(ob => { if(ob.parentNode) container.removeChild(ob); });
+            obstacles = [];
+            
+            yVelocity = 0;
+            mar.style.bottom = "60px";
+            
+            // Arrancar de nuevo
+            requestAnimationFrame(update);
+            spawnObstacle();
+        }
+
+        function jump() {
+            if (!isJumping && gameActive) {
+                yVelocity = jumpStrength;
+                isJumping = true;
+            }
+        }
+
+        window.addEventListener("touchstart", (e) => { 
+            if(gameActive) { e.preventDefault(); jump(); }
+        }, {passive: false});
+        
+        window.addEventListener("keydown", (e) => { 
+            if(e.code === "Space") jump(); 
+        });
+
+        function spawnObstacle() {
+            if (!gameActive) return;
+            const ob = document.createElement("div");
+            ob.className = "obstacle";
+            ob.innerHTML = "🌸"; 
+            ob.x = window.innerWidth;
+            ob.style.left = ob.x + "px";
+            container.appendChild(ob);
+            obstacles.push(ob);
+            
+            let nextSpawn = Math.random() * 1200 + (1000 - gameSpeed * 30);
+            obstacleTimeout = setTimeout(spawnObstacle, Math.max(800, nextSpawn));
+        }
+
+        function update() {
+            if (!gameActive) return;
+
+            yVelocity += gravity;
+            let currentBottom = parseInt(mar.style.bottom) || 60;
+            let nextBottom = currentBottom - yVelocity;
+
+            if (nextBottom <= 60) {
+                nextBottom = 60;
+                isJumping = false;
+                yVelocity = 0;
+            }
+            mar.style.bottom = nextBottom + "px";
+
+            for (let i = obstacles.length - 1; i >= 0; i--) {
+                let ob = obstacles[i];
+                ob.x -= gameSpeed;
+                ob.style.left = ob.x + "px";
+
+                // Colisión
+                if (ob.x < 90 && ob.x > 40 && nextBottom < 110) {
+                    gameOver();
+                    return;
+                }
+
+                if (ob.x < -50) {
+                    if(ob.parentNode) container.removeChild(ob);
+                    obstacles.splice(i, 1);
+                    score++;
+                    scoreDisplay.innerText = score;
+                    
+                    // Mensajes cada 2 puntos
+                    if (score % 2 === 0) {
+                        msgArea.innerText = mensajes[Math.floor(Math.random() * mensajes.length)];
+                    }
+                    if (score % 5 === 0) gameSpeed += 0.4;
+                }
+            }
+            animationId = requestAnimationFrame(update);
+        }
+
+        function gameOver() {
+            gameActive = false;
+            document.getElementById("final-score").innerText = " Tus puntos amor: " + score;
+            gameOverScreen.style.display = "flex";
+            clearTimeout(obstacleTimeout);
         }
     </script>
 </body>
